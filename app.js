@@ -97,7 +97,7 @@ app.post("/post", bodyParser.json(), (req, res) => {
   );
   // res.send(JSON.stringify(req.body));
 });
-
+// Listening to port
 app.listen(port, (err) => {
   if (err) console.log(err);
   console.log("listening in port ", port);
