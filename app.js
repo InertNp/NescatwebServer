@@ -30,16 +30,30 @@ app.get("/posts", (req, res) => {
   con.query(
     `select * from posts  order by created_date desc limit 100`,
     function (err, result, field) {
-      JSON.stringify(result);
       console.log("Data fetched and send");
       res.json({ response: result });
     }
   );
 });
 
+app.post("/checkUsername", bodyParser.json(), (req, res) => {
+  con.query(
+    `select username from users  where username="${req.body.username}";`,
+    function (err, result) {
+      console.log(result[0]?.username, req.body.username);
+      if (result[0]?.username === req.body.username) {
+        res.send(true);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+  // res.send(JSON.stringify(req.body.username));
+});
+
 app.post("/login", bodyParser.json(), (req, res) => {
   const user = req.body.username;
-  const pass = req.body.username;
+  const pass = req.body.password;
   con.query(
     `select * from users where username="${user}" and password="${pass}" `,
     function (err, result) {
@@ -83,7 +97,21 @@ app.post("/img", async (req, res) => {
     res.status(500).send(err);
   }
 });
-
+app.post("/reg", bodyParser.json(), (req, res) => {
+  // console.log(req.body);
+  con.query(
+    `INSERT INTO users ( name,username, email , password) VALUES ("${req.body.name}","${req.body.username}","${req.body.email}","${req.body.password}");`,
+    function (err, result) {
+      if (result?.affectedRows) {
+        console.log(result?.affectedRows);
+        res.send(JSON.stringify("true"));
+      } else {
+        res.send(JSON.stringify("false"));
+      }
+    }
+  );
+  // res.send(JSON.stringify(req.body));
+});
 app.post("/post", bodyParser.json(), (req, res) => {
   console.log(req.body);
   const imgUrl = null || req.body.imgUrl;
