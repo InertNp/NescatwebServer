@@ -8,6 +8,7 @@ const port = process.env.port || 9000;
 const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 const uuid = require("uuid");
+const ip = require("ip");
 
 app.use(
   fileUpload({
@@ -100,5 +101,5 @@ app.post("/post", bodyParser.json(), (req, res) => {
 // Listening to port
 app.listen(port, (err) => {
   if (err) console.log(err);
-  console.log("listening in port ", port);
+  console.log(`Listening in address:${ip.address()}:${port}`);
 });
