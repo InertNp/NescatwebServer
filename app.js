@@ -126,6 +126,20 @@ app.post("/post", bodyParser.json(), (req, res) => {
   );
   // res.send(JSON.stringify(req.body));
 });
+app.post("/deletePost", bodyParser.json(), (req, res) => {
+  console.log(req.body);
+  con.query(
+    `delete  from posts  where posts.id="${req.body.postId}";`,
+    function (err, result) {
+      if (result.affectedRows === 0) {
+        res.send(JSON.stringify(false));
+      } else {
+        res.send(JSON.stringify(true));
+      }
+    }
+  );
+});
+
 // Listening to port
 app.listen(port, (err) => {
   if (err) console.log(err);
