@@ -52,17 +52,29 @@ app.post("/checkUsername", bodyParser.json(), (req, res) => {
 });
 
 app.post("/login", bodyParser.json(), (req, res) => {
+  console.log(req.body);
+  console.log(req.body.username);
   const user = req.body.username;
   const pass = req.body.password;
   con.query(
     `select * from users where username="${user}" and password="${pass}" `,
     function (err, result) {
-      JSON.stringify(result);
+      console.log(JSON.stringify(result));
       if (result.length === 0) {
         res.send(JSON.stringify("false"));
       } else {
-        res.send(JSON.stringify(result));
         console.log(result);
+        const image = "";
+        const value = {
+          id: result[0].id,
+          name: result[0].name,
+          email: result[0].email,
+          username: result[0].username,
+          imageUrl: image,
+          created_date: result[0].created_date,
+        };
+        res.send(value);
+        console.log(value);
       }
     }
   );
@@ -135,6 +147,21 @@ app.post("/deletePost", bodyParser.json(), (req, res) => {
         res.send(JSON.stringify(false));
       } else {
         res.send(JSON.stringify(true));
+      }
+    }
+  );
+});
+app.post("/userInfo", bodyParser.json(), (req, res) => {
+  const user = req.body.username;
+  con.query(
+    `select id,name,email,username,created_date ,imageUrl from users where username="${user}"  `,
+    function (err, result) {
+      if (result[0]) {
+        console.log(result[0]);
+        res.send(JSON.stringify(result[0]));
+      } else {
+        console.log("No user found");
+        res.send(JSON.stringify("false"));
       }
     }
   );
