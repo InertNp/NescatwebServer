@@ -28,7 +28,8 @@ app.use((req, res, next) => {
 
 app.get("/posts", (req, res) => {
   con.query(
-    `select * from posts  order by created_date desc limit 100`,
+    `select * from posts order by created_date desc limit 100  `,
+
     function (err, result, field) {
       console.log("Data fetched and send");
       res.json({ response: result });
@@ -62,19 +63,20 @@ app.post("/login", bodyParser.json(), (req, res) => {
       console.log(JSON.stringify(result));
       if (result.length === 0) {
         res.send(JSON.stringify("false"));
-      } else {
-        console.log(result);
-        const image = "";
+      } 
+      else {
         const value = {
-          id: result[0].id,
+          userId: result[0].userId,
           name: result[0].name,
           email: result[0].email,
           username: result[0].username,
-          imageUrl: image,
+          imgUrl: result[0].imgUrl,
           created_date: result[0].created_date,
+          last_login:result[0].last_login,
+          userType:result[0].userType,
         };
-        res.send(value);
-        console.log(value);
+        res.send(JSON.stringify(value));
+    
       }
     }
   );
@@ -125,23 +127,63 @@ app.post("/reg", bodyParser.json(), (req, res) => {
   // res.send(JSON.stringify(req.body));
 });
 app.post("/post", bodyParser.json(), (req, res) => {
-  console.log(req.body);
-  const imgUrl = null || req.body.imgUrl;
-  const des = null || req.body.des;
-  con.query(
-    `INSERT INTO posts(title,description,authorID ,author ,imgUrl) 
-    VALUES ("${req.body.title}","${des}","${req.body.authorId}","${req.body.author}","${imgUrl}" ); `,
-    function (err, result) {
-      res.send(JSON.stringify("true"));
-      console.log(result);
-    }
-  );
-  // res.send(JSON.stringify(req.body));
+
+  const imgUrl =  req.body.imgUrl;
+  if(req.body.topic){
+    con.query(
+      `INSERT INTO posts(topic,content,username,imgUrl) 
+      VALUES ("${req.body.topic}",'${req.body.content}','${req.body.username}',"${imgUrl}" ); `,
+      function (err, result) {
+        res.send(JSON.stringify("true"));
+        console.log("eroor" ,err)
+        console.log("Result of somthing",result);
+      }
+    );
+  }
+  else{
+    res.send(JSON.stringify("false"))
+  }
+
 });
+app.post("/fullpost", bodyParser.json(), (req, res) => {
+  con.query(`select *  from posts where posts.postId = "${req.body.id}"`, 
+  function(err ,result){
+    console.log(err ,result)
+    if(result[0]){
+      const data={...result[0]}
+      res.send(JSON.stringify(data))
+    }
+    else{
+      res.send(JSON.stringify(false))
+    }
+  })
+});
+// gives all comments of that post
+app.post("/comments" , bodyParser.json() ,(req,res)=>{
+  con.query(`select * from comments where comments.postId = "${req.body.id}" ORDER BY created_date DESC;` , function(err ,result){
+    if(result){
+      const data = [...result]
+      res.send(JSON.stringify(data))
+    }
+    else{
+      res.send(JSON.stringify("nodata"))
+    }
+  })
+
+})
+//this is to comment
+app.post("/comment" , bodyParser.json() ,(req,res)=>{
+  console.log(req.body)
+  con.query(`INSERT INTO comments ( content,username, postId , imgUrl) VALUES ("${req.body.content}","${req.body.username}","${req.body.postId}","${req.body.imgUrl}");`,
+   function(err ,result){
+  console.log(err, result)
+  })
+})
+// deleting post 
 app.post("/deletePost", bodyParser.json(), (req, res) => {
   console.log(req.body);
   con.query(
-    `delete  from posts  where posts.id="${req.body.postId}";`,
+    `delete  from posts  where posts.postId="${req.body.postId}";`,
     function (err, result) {
       if (result.affectedRows === 0) {
         res.send(JSON.stringify(false));
@@ -150,11 +192,21 @@ app.post("/deletePost", bodyParser.json(), (req, res) => {
       }
     }
   );
+  con.query(
+    `delete  from comments where comments.postId="${req.body.postId}";`,
+    function (err, result) {
+      if (result.affectedRows === 0) {
+       console.log(err)
+      } else {
+        console.log("comment deleted")
+      }
+    }
+  );
 });
 app.post("/userInfo", bodyParser.json(), (req, res) => {
   const user = req.body.username;
   con.query(
-    `select id,name,email,username,created_date ,imageUrl from users where username="${user}"  `,
+    `select userId,name,email,username,created_date ,imgUrl,last_login from users where username="${user}"  `,
     function (err, result) {
       if (result[0]) {
         console.log(result[0]);
