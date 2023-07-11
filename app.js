@@ -37,6 +37,7 @@ app.get("/posts", (req, res) => {
   );
 });
 
+
 app.post("/checkUsername", bodyParser.json(), (req, res) => {
   con.query(
     `select username from users  where username="${req.body.username}";`,
@@ -51,7 +52,100 @@ app.post("/checkUsername", bodyParser.json(), (req, res) => {
   );
   // res.send(JSON.stringify(req.body.username));
 });
-
+app.post("/checkComment", bodyParser.json(), (req, res) => {
+  console.log(req.body.id,req.body.username)
+  con.query(
+    `select * from comments  where comments.postId=${req.body.id} && comments.username=${req.body.username};`,
+    function (err, result) {
+      console.log(result,err);
+      if (result[0]) {
+        res.send(true);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+  // res.send(JSON.stringify(req.body));
+});
+app.post("/updateComment", bodyParser.json(), (req, res) => {
+  console.log(req.body)
+  con.query(
+    `update comments set comments.content='${req.body.content}'  where comments.commentId=${req.body.id}`,
+    function (err, result) {
+      console.log(result,err);
+      if (result.affectedRows == 1) {
+        res.send(true);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+ 
+});
+app.post("/deleteComment", bodyParser.json(), (req, res) => {
+  console.log(req.body)
+  con.query(
+    `delete from comments where comments.commentId=${req.body.id}`,
+    function (err, result) {
+      console.log(result,err);
+      if (result.affectedRows == 1) {
+        res.send(true);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+ 
+});
+app.get("/popular", (req, res) => {
+    
+  con.query(
+    `select * from posts order by likes desc limit 5 `,
+    function (err, result) {
+      console.log(result);
+      res.json(result)
+    }
+  );
+ 
+});
+app.post("/checkLike", bodyParser.json(), (req, res) => {
+  console.log(req.body)
+  con.query(
+    `select * from likes where username=${req.body.username} AND postId=${req.body.id}`,
+    function (err, result) {
+      console.log(result)
+      if (result[0]) {
+        console.log(result , "Like founded");
+        res.send(true);
+      } else {
+        res.send(false);
+      }
+    }
+  );
+ 
+});
+app.post("/like", bodyParser.json(), (req, res) => {
+  console.log(req.body , "liked")
+  con.query(
+    `select likes from posts where  postId=${req.body.id}`,
+    function (err, result) {
+      const updatedLike = result[0].likes + 1;
+      console.log(updatedLike , "likes")
+      con.query(`insert into likes (postId, username) values (${req.body.id},${req.body.username})`,
+      function(err,result3){
+        console.log(result3 ,err)
+      })
+      con.query(`update posts set likes = ${updatedLike} where postId =${req.body.id}` , function(err,result2){
+        console.log( "updated in = posts")
+        res.send(JSON.stringify(true))
+      })  
+ 
+    }
+  );
+ 
+    
+  
+});
 app.post("/login", bodyParser.json(), (req, res) => {
   console.log(req.body);
   console.log(req.body.username);
