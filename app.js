@@ -138,9 +138,9 @@ app.post("/deleteComment", bodyParser.json(), (req, res) => {
 app.get("/popular", (req, res) => {
     
   con.query(
-    `select * from posts order by likes desc limit 5 `,
+    `select postId,topic from posts ORDER BY posts.likes DESC LIMIT 5`,
     function (err, result) {
-      console.log(result);
+      // console.log(result);
       res.json(result)
     }
   );
@@ -167,6 +167,7 @@ app.post("/like", bodyParser.json(), (req, res) => {
   con.query(
     `select likes from posts where  postId=${req.body.id}`,
     function (err, result) {
+      
       const updatedLike = result[0].likes + 1;
       console.log(updatedLike , "likes")
       con.query(`insert into likes (postId, username) values (${req.body.id},${req.body.username})`,
@@ -259,21 +260,23 @@ app.post("/reg", bodyParser.json(), (req, res) => {
   // res.send(JSON.stringify(req.body));
 });
 app.post("/post", bodyParser.json(), (req, res) => {
-
+  console.log(req.body.content)
   const imgUrl =  req.body.imgUrl;
+  const topic = JSON.stringify(req.body.topic)
+  
   if(req.body.topic){
     con.query(
       `INSERT INTO posts(topic,content,username,imgUrl) 
-      VALUES ("${req.body.topic}",'${req.body.content}','${req.body.username}',"${imgUrl}" ); `,
+      VALUES (${topic},"${req.body.content}",'${req.body.username}',"${imgUrl}" ); `,
       function (err, result) {
-        res.send(JSON.stringify("true"));
+        res.send(true);
         console.log("error" ,err)
-        console.log("Result of somthing",result);
+        // console.log("Result of somthing",result);
       }
     );
   }
   else{
-    res.send(JSON.stringify("false"))
+    res.send(false)
   }
 
 });
