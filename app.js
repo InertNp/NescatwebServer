@@ -37,7 +37,40 @@ app.get("/posts", (req, res) => {
   );
 });
 
+app.post("/changePassword",bodyParser.json(),(req,res)=>{
+  console.log(req.body)
 
+  con.query(`select userId,password from users where users.username=${req.body.username};`,function(err,result){
+    // console.log([...result],err)
+    const [data] = [...result];
+    console.log(data ,"result of change password check")
+    console.log(req.body.password,data.password ,"to see password match")
+    if(req.body.password === data.password){
+      con.query(`update  users set users.password='${req.body.newPassword}' where  users.userId=${data.userId}`,function(err,result){
+        console.log(result,err)
+        if(err === null) {
+          res.send(true);
+        }
+        else{
+          res.send(false)
+        }
+      })
+    }
+    else{
+      console.log(req.body.password === result.password)
+      res.send(JSON.stringify("Incorrect Password"));
+    }
+  })
+})
+app.post("/changeAvatar",bodyParser.json(),(req,res)=>{
+  console.log(req.body)
+  con.query(`update users set users.imgUrl = ${req.body.imageUrl} where users.userId=${req.body.userId}`,(err,result)=>{
+    console.log(result ,"avatar changed");
+    res.send(true)
+  })
+
+ 
+})
 app.post("/checkUsername", bodyParser.json(), (req, res) => {
   con.query(
     `select username from users  where username="${req.body.username}";`,
@@ -53,11 +86,15 @@ app.post("/checkUsername", bodyParser.json(), (req, res) => {
   // res.send(JSON.stringify(req.body.username));
 });
 app.post("/checkComment", bodyParser.json(), (req, res) => {
-  console.log(req.body.id,req.body.username)
+  console.log(req.body.id,req.body.username , "check comment")
+  if(req.body.id == undefined || req.body.username == undefined){
+    res.send(false)
+  }
+  else{
   con.query(
     `select * from comments  where comments.postId=${req.body.id} && comments.username=${req.body.username};`,
     function (err, result) {
-      console.log(result,err);
+      // console.log(result,err)
       if (result[0]) {
         res.send(true);
       } else {
@@ -65,6 +102,7 @@ app.post("/checkComment", bodyParser.json(), (req, res) => {
       }
     }
   );
+}
   // res.send(JSON.stringify(req.body));
 });
 app.post("/updateComment", bodyParser.json(), (req, res) => {
@@ -185,7 +223,7 @@ app.post("/img", async (req, res) => {
       });
     } else {
       //Use the name of the input field (i.e. "avatar") to retrieve the uploaded file
-      let avatar = req.files.avatar;
+     const avatar = req.files.avatar;
       const avatarName = `${uuid.v4()}-${avatar.name}`;
       //Use the mv() method to place the file in the upload directory (i.e. "uploads")
       avatar.mv("./img/" + avatarName);
@@ -229,7 +267,7 @@ app.post("/post", bodyParser.json(), (req, res) => {
       VALUES ("${req.body.topic}",'${req.body.content}','${req.body.username}',"${imgUrl}" ); `,
       function (err, result) {
         res.send(JSON.stringify("true"));
-        console.log("eroor" ,err)
+        console.log("error" ,err)
         console.log("Result of somthing",result);
       }
     );
@@ -268,16 +306,22 @@ app.post("/comments" , bodyParser.json() ,(req,res)=>{
 //this is to comment
 app.post("/comment" , bodyParser.json() ,(req,res)=>{
   console.log(req.body)
-  con.query(`INSERT INTO comments ( content,username, postId , imgUrl) VALUES ("${req.body.content}","${req.body.username}","${req.body.postId}","${req.body.imgUrl}");`,
+  con.query(`INSERT INTO comments ( content,username, postId , imgUrl) VALUES ('${req.body.content}',"${req.body.username}","${req.body.postId}","${req.body.imgUrl}");`,
    function(err ,result){
   console.log(err, result)
+  if(err){
+    res.send(false)
+  }
+  else(
+    res.send(true)
+  )
   })
 })
 // deleting post 
 app.post("/deletePost", bodyParser.json(), (req, res) => {
   console.log(req.body);
   con.query(
-    `delete  from posts  where posts.postId="${req.body.postId}";`,
+    `delete  from posts  where posts.postId=${JSON.stringify(req.body.postId)};`,
     function (err, result) {
       if (result.affectedRows === 0) {
         res.send(JSON.stringify(false));
