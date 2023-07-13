@@ -92,7 +92,7 @@ app.post("/checkComment", bodyParser.json(), (req, res) => {
   }
   else{
   con.query(
-    `select * from comments  where comments.postId=${req.body.id} && comments.username=${req.body.username};`,
+    `select * from comments  where comments.postId=${req.body.id} && comments.username=${con.escape(req.body.username)};`,
     function (err, result) {
       // console.log(result,err)
       if (result[0]) {
@@ -108,7 +108,7 @@ app.post("/checkComment", bodyParser.json(), (req, res) => {
 app.post("/updateComment", bodyParser.json(), (req, res) => {
   console.log(req.body)
   con.query(
-    `update comments set comments.content='${req.body.content}'  where comments.commentId=${req.body.id}`,
+    `update comments set comments.content=${con.escape(req.body.content)}  where comments.commentId=${req.body.id}`,
     function (err, result) {
       console.log(result,err);
       if (result.affectedRows == 1) {
@@ -262,12 +262,12 @@ app.post("/reg", bodyParser.json(), (req, res) => {
 app.post("/post", bodyParser.json(), (req, res) => {
   console.log(req.body.content)
   const imgUrl =  req.body.imgUrl;
-  const topic = JSON.stringify(req.body.topic)
-  
+  const topic = con.escape(req.body.topic)
+  const content= con.escape(req.body.content)
   if(req.body.topic){
     con.query(
       `INSERT INTO posts(topic,content,username,imgUrl) 
-      VALUES (${topic},"${req.body.content}",'${req.body.username}',"${imgUrl}" ); `,
+      VALUES (${topic},${content},'${req.body.username}',"${imgUrl}" ); `,
       function (err, result) {
         res.send(true);
         console.log("error" ,err)
@@ -281,7 +281,7 @@ app.post("/post", bodyParser.json(), (req, res) => {
 
 });
 app.post("/fullpost", bodyParser.json(), (req, res) => {
-  con.query(`select *  from posts where posts.postId = "${req.body.id}"`, 
+  con.query(`select *  from posts p where p.postId = "${req.body.id}"`, 
   function(err ,result){
     console.log(err ,result)
     if(result[0]){
@@ -309,7 +309,7 @@ app.post("/comments" , bodyParser.json() ,(req,res)=>{
 //this is to comment
 app.post("/comment" , bodyParser.json() ,(req,res)=>{
   console.log(req.body)
-  con.query(`INSERT INTO comments ( content,username, postId , imgUrl) VALUES ('${req.body.content}',"${req.body.username}","${req.body.postId}","${req.body.imgUrl}");`,
+  con.query(`INSERT INTO comments ( content,username, postId , imgUrl) VALUES (${con.escape(req.body.content)},"${req.body.username}","${req.body.postId}","${req.body.imgUrl}");`,
    function(err ,result){
   console.log(err, result)
   if(err){
