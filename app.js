@@ -92,11 +92,12 @@ app.post("/checkComment", bodyParser.json(), (req, res) => {
   }
   else{
   con.query(
-    `select * from comments  where comments.postId=${req.body.id} && comments.username=${con.escape(req.body.username)};`,
+    `select * from comments  where comments.postId=${req.body.id} && comments.username=${req.body.username};`,
     function (err, result) {
-      // console.log(result,err)
+      console.log(result,err)
       if (result[0]) {
         res.send(true);
+        console.log("User has aleradycommented on "+result[0].postId)
       } else {
         res.send(false);
       }
