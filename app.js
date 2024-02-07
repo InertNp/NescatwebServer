@@ -32,26 +32,24 @@ app.get("/posts", (req, res) => {
 
     function (err, result, field) {
       console.log("Data fetched and send");
+      // console.log(result);
       res.json({ response: result });
     }
   );
 });
 app.post("/online", bodyParser.json(), (req, res) => {
- 
-  console.log(req.body.date ,"online ")
+  console.log(req.body.date, "online ");
   con.query(
     `update users set users.last_login='${req.body.date}'  where users.userId=${req.body.id}`,
     function (err, result) {
       // console.log(err,result)
-    if(err){
-      res.send(false)
-    }
-    else{
-      res.send(true)
-    }
+      if (err) {
+        res.send(false);
+      } else {
+        res.send(true);
+      }
     }
   );
-  
 });
 app.post("/changePassword", bodyParser.json(), (req, res) => {
   console.log(req.body);
@@ -171,11 +169,11 @@ app.post("/checkLike", bodyParser.json(), (req, res) => {
     `select * from likes where username=${req.body.username} AND postId=${req.body.id}`,
     function (err, result) {
       console.log(result);
-      if (result[0]) {
+      if (err) {
+        res.send(false);
+      } else {
         console.log(result, "Like founded");
         res.send(true);
-      } else {
-        res.send(false);
       }
     }
   );
@@ -205,31 +203,37 @@ app.post("/like", bodyParser.json(), (req, res) => {
   );
 });
 app.post("/login", bodyParser.json(), (req, res) => {
-  console.log(req.body);
-  console.log(req.body.username);
   const user = req.body.username;
   const pass = req.body.password;
-  con.query(
-    `select * from users where username="${user}" and password="${pass}" `,
-    function (err, result) {
-      console.log(JSON.stringify(result));
-      if (result.length === 0) {
-        res.send(JSON.stringify("false"));
-      } else {
-        const value = {
-          userId: result[0].userId,
-          name: result[0].name,
-          email: result[0].email,
-          username: result[0].username,
-          imgUrl: result[0].imgUrl,
-          created_date: result[0].created_date,
-          last_login: result[0].last_login,
-          userType: result[0].userType,
-        };
-        res.send(JSON.stringify(value));
+  console.log(user, pass);
+  try {
+    con.query(
+      `select * from users where username="${user}" and password="${pass}" `,
+      function (err, result) {
+        if (err) {
+          console.log(err);
+        }
+
+        if (result.length == 0) {
+          res.send(JSON.stringify("false"));
+        } else {
+          const value = {
+            userId: result[0].userId,
+            name: result[0].name,
+            email: result[0].email,
+            username: result[0].username,
+            imgUrl: result[0].imgUrl,
+            created_date: result[0].created_date,
+            last_login: result[0].last_login,
+            userType: result[0].userType,
+          };
+          res.send(JSON.stringify(value));
+        }
       }
-    }
-  );
+    );
+  } catch (err) {
+    res.send(JSON.stringify("false"));
+  }
 });
 
 app.post("/img", async (req, res) => {
