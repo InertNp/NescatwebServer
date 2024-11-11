@@ -168,12 +168,16 @@ app.post("/checkLike", bodyParser.json(), (req, res) => {
   con.query(
     `select * from likes where username=${req.body.username} AND postId=${req.body.id}`,
     function (err, result) {
-      console.log(result);
+       
       if (err) {
         res.send(false);
       } else {
-        console.log(result, "Like founded");
+        console.log(result.length, "Like founded");
+       if(result.length >0){
         res.send(true);
+       }else{
+        res.send(false)
+       }
       }
     }
   );
@@ -334,8 +338,8 @@ app.post("/comment", bodyParser.json(), (req, res) => {
     `INSERT INTO comments ( content,username, postId , imgUrl) VALUES (${con.escape(
       req.body.content
     )},"${req.body.username}","${req.body.postId}","${req.body.imgUrl}");`,
-    function (err, result) {
-      console.log(err, result);
+    function (err) {
+      
       if (err) {
         res.send(false);
       } else res.send(true);
